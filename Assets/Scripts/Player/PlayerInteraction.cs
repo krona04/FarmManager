@@ -8,48 +8,56 @@ public class PlayerInteraction : MonoBehaviour
     public float interactDistance = 3f;
     public Key interactKey = Key.E;
 
+    [Header("Shop Controls")]
+    public Key buySeedKey = Key.B;
+    public Key sellHarvestKey = Key.P;
+    public Key switchCropKey = Key.Q;
+
     [Header("UI")]
     public Text hintText;
 
     private Camera _camera;
 
-    void Start()
+    private void Start()
     {
         _camera = GetComponentInChildren<Camera>();
     }
 
-    void Update()
+    private void Update()
     {
         CheckForInteractable();
         TryInteract();
+        TryShopActions();
     }
 
-    void CheckForInteractable()
+    private void CheckForInteractable()
     {
-        if (hintText == null) return;
+        if (hintText == null)
+            return;
 
         FarmPlot plot = GetLookedAtPlot();
 
-        if (plot != null)
+        if (plot == null)
         {
-            hintText.text = plot.currentState switch
-            {
-                PlotState.Empty => "[E] Plant",
-                PlotState.Growing => "[E] Growing...",
-                PlotState.ReadyToHarvest => "[E] Bring in the harvest!",
-                _ => ""
-            };
+            hintText.text = "[Q] Switch crop | [B] Buy selected seed | [P] Sell harvest";
+            return;
         }
-        else
+
+        hintText.text = plot.currentState switch
         {
-            hintText.text = "";
-        }
+            PlotState.Empty => $"[E] Plant {GameManager.Instance.selectedCrop}",
+            PlotState.Growing => $"{plot.GetPlantedCropName()} growing... {Mathf.RoundToInt(plot.GetGrowthProgress() * 100f)}%",
+            PlotState.ReadyToHarvest => $"[E] Harvest {plot.GetPlantedCropName()}",
+            _ => ""
+        };
     }
 
-    void TryInteract()
+    private void TryInteract()
     {
         var keyboard = Keyboard.current;
-        if (keyboard == null) return;
+
+        if (keyboard == null)
+            return;
 
         if (keyboard[interactKey].wasPressedThisFrame)
         {
@@ -58,23 +66,44 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
-    FarmPlot GetLookedAtPlot()
+    private void TryShopActions()
     {
-        if (_camera == null) return null;
+        var keyboard = Keyboard.current;
+
+        if (keyboard == null)
+            return;
+
+        if (GameManager.Instance == null)
+            return;
+
+        if (keyboard[buySeedKey].wasPressedThisFrame)
+        {
+            GameManager.Instance.BuySelectedSeed();
+        }
+
+        if (keyboard[sellHarvestKey].wasPressedThisFrame)
+        {
+            GameManager.Instance.SellAllHarvest();
+        }
+
+        if (keyboard[switchCropKey].wasPressedThisFrame)
+        {
+            GameManager.Instance.SelectNextCrop();
+        }
+    }
+
+    private FarmPlot GetLookedAtPlot()
+    {
+        if (_camera == null)
+            return null;
 
         Ray ray = new Ray(_camera.transform.position, _camera.transform.forward);
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
-            return hit.collider.GetComponent<FarmPlot>();
+        {
+            return hit.collider.GetComponentInParent<FarmPlot>();
+        }
 
         return null;
-    }
-
-    void OnDrawGizmosSelected()
-    {
-        if (_camera == null) return;
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawRay(_camera.transform.position,
-                       _camera.transform.forward * interactDistance);
     }
 }
