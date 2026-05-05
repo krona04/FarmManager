@@ -1,0 +1,3 @@
+repository "AntonVIktor/FarmManager@20067502770980@cloud"
+  path "/"
+    smartbranch "/main"
