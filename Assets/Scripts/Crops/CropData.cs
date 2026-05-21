@@ -15,4 +15,9 @@ public class CropData
 
     public Color growingColor;
     public Color readyColor;
+
+    [Header("Visual")]
+    public GameObject plantPrefab;
+    public Vector3 startScale = new Vector3(0.15f, 0.15f, 0.15f);
+    public Vector3 fullScale = new Vector3(1f, 1f, 1f);
 }

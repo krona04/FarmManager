@@ -48,6 +48,14 @@ public class PlayerMovement : MonoBehaviour
 
     void ReadInput()
     {
+        if (FarmPlot.IsPlantingQteActive)
+        {
+            _moveInput = Vector2.zero;
+            _isRunning = false;
+            _jumpPressed = false;
+            return;
+        }
+
         var keyboard = Keyboard.current;
         if (keyboard == null) return;
 
