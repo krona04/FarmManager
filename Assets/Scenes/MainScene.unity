@@ -762,7 +762,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MenuToggle
   talentMenuPanel: {fileID: 1485270091}
-  playerMovementScript: {fileID: 0}
+  playerMovementScript: {fileID: 440334410}
 --- !u!4 &3658132
 Transform:
   m_ObjectHideFlags: 0

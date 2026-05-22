@@ -55,6 +55,14 @@ public class TalentManager : MonoBehaviour
         else talentLevels[type] = 1;
     }
 
+    /// <summary>Directly set a talent level — used by the save/load system.</summary>
+    public void SetLevel(TalentType type, int level)
+    {
+        int clamped = Mathf.Clamp(level, 0, maxLevels[type]);
+        if (clamped == 0) talentLevels.Remove(type);
+        else              talentLevels[type] = clamped;
+    }
+
     public float GetTalentModifier(TalentType type)
     {
         int level = GetCurrentLevel(type);

@@ -478,6 +478,52 @@ public class FarmPlot : MonoBehaviour
         return _currentCropData.cropName;
     }
 
+    // ── Save / Load ───────────────────────────────────────────────────────────
+
+    public PlotSaveData GetSaveData()
+    {
+        return new PlotSaveData
+        {
+            state          = (int)currentState,
+            plantedCrop    = (int)plantedCrop,
+            growTimer      = _growTimer,
+            growTimeTarget = _currentGrowTimeTarget
+        };
+    }
+
+    public void LoadFromSaveData(PlotSaveData data)
+    {
+        PlotState savedState = (PlotState)data.state;
+        CropType  savedCrop  = (CropType)data.plantedCrop;
+
+        RemovePlants();
+
+        if (savedState == PlotState.Empty)
+        {
+            currentState          = PlotState.Empty;
+            plantedCrop           = CropType.None;
+            _growTimer            = 0f;
+            _currentGrowTimeTarget = 0f;
+            _currentCropData      = null;
+            UpdateVisual();
+            return;
+        }
+
+        CropData cropData = GameManager.Instance?.GetCropData(savedCrop);
+        if (cropData == null) return;
+
+        plantedCrop            = savedCrop;
+        _currentCropData       = cropData;
+        currentState           = savedState;
+        _growTimer             = data.growTimer;
+        // Restore saved grow target; fall back to raw growTime if missing (old saves)
+        _currentGrowTimeTarget = data.growTimeTarget > 0f ? data.growTimeTarget : cropData.growTime;
+
+        SpawnPlants();
+        UpdatePlantGrowth();
+        UpdateVisual();
+    }
+
     private void DrawRect(Rect rect, Color color)
     {
         Color previousColor = GUI.color;
