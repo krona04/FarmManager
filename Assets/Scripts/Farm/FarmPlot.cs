@@ -31,6 +31,7 @@ public class FarmPlot : MonoBehaviour
     private readonly List<GameObject> _currentPlantObjects = new();
 
     private float _growTimer = 0f;
+    private float _currentGrowTimeTarget = 0f;
     private CropData _currentCropData;
 
     private bool _qteActive;
@@ -86,10 +87,10 @@ public class FarmPlot : MonoBehaviour
 
         UpdatePlantGrowth();
 
-        if (_growTimer >= _currentCropData.growTime)
+        if (_growTimer >= _currentGrowTimeTarget)
         {
             currentState = PlotState.ReadyToHarvest;
-            _growTimer = _currentCropData.growTime;
+            _growTimer = _currentGrowTimeTarget;
 
             UpdatePlantGrowth();
             UpdateVisual();
@@ -205,6 +206,9 @@ public class FarmPlot : MonoBehaviour
 
         plantedCrop = selectedCrop;
         _currentCropData = cropData;
+
+        float growthModifier = TalentManager.Instance.GetTalentModifier(TalentType.GrowthSpeed);
+        _currentGrowTimeTarget = _currentCropData.growTime * growthModifier;
 
         currentState = PlotState.Growing;
         _growTimer = 0f;
@@ -327,6 +331,7 @@ public class FarmPlot : MonoBehaviour
 
         currentState = PlotState.Empty;
         _growTimer = 0f;
+        _currentGrowTimeTarget = 0f;
         _qteActive = false;
         IsPlantingQteActive = false;
 
@@ -439,10 +444,10 @@ public class FarmPlot : MonoBehaviour
         if (currentState != PlotState.Growing && currentState != PlotState.ReadyToHarvest)
             return 0f;
 
-        if (_currentCropData == null)
+        if (_currentCropData == null || _currentGrowTimeTarget <= 0f)
             return 0f;
 
-        return Mathf.Clamp01(_growTimer / _currentCropData.growTime);
+        return Mathf.Clamp01(_growTimer / _currentGrowTimeTarget);
     }
 
     public void AddGrowthTime(float seconds)
@@ -453,10 +458,10 @@ public class FarmPlot : MonoBehaviour
         if (_currentCropData == null)
             return;
 
-        _growTimer = Mathf.Clamp(_growTimer + seconds, 0f, _currentCropData.growTime);
+        _growTimer = Mathf.Clamp(_growTimer + seconds, 0f, _currentGrowTimeTarget);
         UpdatePlantGrowth();
 
-        if (_growTimer >= _currentCropData.growTime)
+        if (_growTimer >= _currentGrowTimeTarget)
         {
             currentState = PlotState.ReadyToHarvest;
             UpdateVisual();

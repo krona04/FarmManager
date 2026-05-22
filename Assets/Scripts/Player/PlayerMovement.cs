@@ -19,7 +19,6 @@ public class PlayerMovement : MonoBehaviour
     private Vector3 _velocity;
     private bool _isGrounded;
 
-    // New Input System
     private Vector2 _moveInput;
     private bool _jumpPressed;
     private bool _isRunning;
@@ -66,7 +65,6 @@ public class PlayerMovement : MonoBehaviour
         if (keyboard.dKey.isPressed) _moveInput.x += 1f;
 
         _isRunning = keyboard.leftShiftKey.isPressed;
-
         _jumpPressed = keyboard.spaceKey.wasPressedThisFrame;
     }
 
@@ -88,8 +86,11 @@ public class PlayerMovement : MonoBehaviour
         if (move.magnitude > 1f)
             move.Normalize();
 
-        float speed = _isRunning ? runSpeed : walkSpeed;
-        _controller.Move(move * speed * Time.deltaTime);
+        float baseSpeed = _isRunning ? runSpeed : walkSpeed;
+        float speedModifier = TalentManager.Instance.GetTalentModifier(TalentType.MovementSpeed);
+        float finalSpeed = baseSpeed * speedModifier;
+
+        _controller.Move(move * finalSpeed * Time.deltaTime);
     }
 
     void HandleJump()

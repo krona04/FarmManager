@@ -87,21 +87,19 @@ public class GameManager : MonoBehaviour
 
     public void AddHarvest(CropType cropType, int amount)
     {
-        switch (cropType)
+        float chance = TalentManager.Instance.GetTalentModifier(TalentType.DoubleYieldChance);
+        if (Random.Range(0f, 100f) < chance)
         {
-            case CropType.Carrot:
-                carrots += amount;
-                break;
-
-            case CropType.Potato:
-                potatoes += amount;
-                break;
-
-            case CropType.Wheat:
-                wheat += amount;
-                break;
+            amount *= 2;
+            Debug.Log("Double Yield Perk Activated!");
         }
 
+        switch (cropType)
+        {
+            case CropType.Carrot: carrots += amount; break;
+            case CropType.Potato: potatoes += amount; break;
+            case CropType.Wheat: wheat += amount; break;
+        }
         UpdateUI();
     }
 
@@ -144,23 +142,23 @@ public class GameManager : MonoBehaviour
     public void SellAllHarvest()
     {
         int totalMoney = 0;
+        int flatBonus = Mathf.RoundToInt(TalentManager.Instance.GetTalentModifier(TalentType.SellPrice));
 
         CropData carrotData = GetCropData(CropType.Carrot);
         CropData potatoData = GetCropData(CropType.Potato);
         CropData wheatData = GetCropData(CropType.Wheat);
 
         if (carrotData != null)
-            totalMoney += carrots * carrotData.sellPrice;
+            totalMoney += carrots * (carrotData.sellPrice + flatBonus);
 
         if (potatoData != null)
-            totalMoney += potatoes * potatoData.sellPrice;
+            totalMoney += potatoes * (potatoData.sellPrice + flatBonus);
 
         if (wheatData != null)
-            totalMoney += wheat * wheatData.sellPrice;
+            totalMoney += wheat * (wheatData.sellPrice + flatBonus);
 
         if (totalMoney <= 0)
         {
-            Debug.Log("No harvest to sell!");
             return;
         }
 
