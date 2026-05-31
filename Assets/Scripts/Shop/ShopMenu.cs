@@ -34,14 +34,26 @@ public class ShopMenu : MonoBehaviour
 
     private void Update()
     {
-        if (!IsShopOpen) return;
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (BuildManager.IsBuildMenuOpen || BuildManager.IsBuildModeActive || FarmUpgradeShop.IsOpen) return;
+
+        var kb = Keyboard.current;
+        if (kb == null) return;
+
+        // [I] toggles the seed shop
+        if (kb.iKey.wasPressedThisFrame)
+        {
+            if (IsShopOpen) Close();
+            else            Open();
+            return;
+        }
+
+        if (IsShopOpen && kb.escapeKey.wasPressedThisFrame)
             Close();
     }
 
     // ── Public ────────────────────────────────────────────────────────────────
 
-    public void Open(string name = "SHOP")
+    public void Open(string name = "SEED SHOP")
     {
         _shopName = name; _tab = Tab.Buy;
         IsShopOpen = true;

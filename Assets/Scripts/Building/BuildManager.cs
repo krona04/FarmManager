@@ -180,10 +180,17 @@ public class BuildManager : MonoBehaviour
     private void Place()
     {
         var item = buildableItems[_sel];
-        if (GameManager.Instance == null || GameManager.Instance.money < item.cost) return;
+        if (GameManager.Instance == null) return;
 
-        GameManager.Instance.money -= item.cost;
-        GameManager.Instance.UpdateUI();
+        // Farm plots can be placed for free if the player has tokens from the kiosk
+        bool usedToken = item.isFarmPlot && (FarmUpgradeManager.Instance?.UseFreePlotToken() ?? false);
+
+        if (!usedToken)
+        {
+            if (GameManager.Instance.money < item.cost) return;
+            GameManager.Instance.money -= item.cost;
+            GameManager.Instance.UpdateUI();
+        }
 
         var go  = Instantiate(item.prefab, _ghost.transform.position, _ghost.transform.rotation);
         var pb  = new PlacedBuilding { idx = _sel, go = go };
@@ -305,14 +312,18 @@ public class BuildManager : MonoBehaviour
 
     private void DrawHUD()
     {
-        var item = buildableItems[_sel];
-        int money = GameManager.Instance != null ? GameManager.Instance.money : 0;
-        bool can  = money >= item.cost;
+        var item   = buildableItems[_sel];
+        int money  = GameManager.Instance != null ? GameManager.Instance.money : 0;
+        int tokens = (item.isFarmPlot && FarmUpgradeManager.Instance != null)
+                     ? FarmUpgradeManager.Instance.freePlotTokens : 0;
+        bool can   = tokens > 0 || money >= item.cost;
+
+        string costStr = tokens > 0 ? $"FREE (token ×{tokens})" : $"{item.cost}$";
 
         R(new Rect(0f, Screen.height - 50f, Screen.width, 50f), new Color(0,0,0,.62f));
         _hudSt.normal.textColor = can ? new Color(.55f,1f,.55f) : new Color(1f,.4f,.4f);
         string msg = can
-            ? $"Building: {item.itemName}  ({item.cost}$)   [LMB] Place   [R] Rotate   [Tab] Menu   [ESC] Cancel"
+            ? $"Building: {item.itemName}  ({costStr})   [LMB] Place   [R] Rotate   [Tab] Menu   [ESC] Cancel"
             : $"Building: {item.itemName}  ({item.cost}$)   Not enough money!   [ESC] Cancel";
         GUI.Label(new Rect(0f, Screen.height - 46f, Screen.width, 42f), msg, _hudSt);
     }

@@ -207,7 +207,8 @@ public class FarmPlot : MonoBehaviour
         plantedCrop = selectedCrop;
         _currentCropData = cropData;
 
-        float growthModifier = TalentManager.Instance.GetTalentModifier(TalentType.GrowthSpeed);
+        float growthModifier = TalentManager.Instance.GetTalentModifier(TalentType.GrowthSpeed)
+                             * (FarmUpgradeManager.Instance?.GetGrowthMultiplier() ?? 1f);
         _currentGrowTimeTarget = _currentCropData.growTime * growthModifier;
 
         currentState = PlotState.Growing;
@@ -322,7 +323,8 @@ public class FarmPlot : MonoBehaviour
             return;
         }
 
-        GameManager.Instance.AddHarvest(plantedCrop, _currentCropData.harvestAmount);
+        int harvestBonus = FarmUpgradeManager.Instance?.GetHarvestBonus() ?? 0;
+        GameManager.Instance.AddHarvest(plantedCrop, _currentCropData.harvestAmount + harvestBonus);
 
         RemovePlants();
 

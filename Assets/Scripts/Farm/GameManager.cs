@@ -120,12 +120,27 @@ public class GameManager : MonoBehaviour
         {
             data.talents = new TalentSaveData
             {
-                movementSpeed    = TalentManager.Instance.GetCurrentLevel(TalentType.MovementSpeed),
-                sellPrice        = TalentManager.Instance.GetCurrentLevel(TalentType.SellPrice),
-                growthSpeed      = TalentManager.Instance.GetCurrentLevel(TalentType.GrowthSpeed),
+                movementSpeed     = TalentManager.Instance.GetCurrentLevel(TalentType.MovementSpeed),
+                sellPrice         = TalentManager.Instance.GetCurrentLevel(TalentType.SellPrice),
+                growthSpeed       = TalentManager.Instance.GetCurrentLevel(TalentType.GrowthSpeed),
                 doubleYieldChance = TalentManager.Instance.GetCurrentLevel(TalentType.DoubleYieldChance)
             };
         }
+
+        // Save player level
+        if (PlayerLevel.Instance != null)
+        {
+            data.playerLevel = new PlayerLevelSaveData
+            {
+                level         = PlayerLevel.Instance.level,
+                xp            = PlayerLevel.Instance.xp,
+                upgradePoints = PlayerLevel.Instance.upgradePoints
+            };
+        }
+
+        // Save farm building upgrades (kiosk)
+        if (FarmUpgradeManager.Instance != null)
+            data.farmUpgrades = FarmUpgradeManager.Instance.GetSaveData();
 
         // Save all plot states (pre-placed first, then dynamic — must match LoadGame order)
         foreach (var p in AllPlots()) data.plots.Add(p.GetSaveData());
@@ -162,6 +177,17 @@ public class GameManager : MonoBehaviour
             TalentManager.Instance.SetLevel(TalentType.GrowthSpeed,       data.talents.growthSpeed);
             TalentManager.Instance.SetLevel(TalentType.DoubleYieldChance, data.talents.doubleYieldChance);
         }
+
+        // Restore player level
+        if (PlayerLevel.Instance != null && data.playerLevel != null)
+        {
+            PlayerLevel.Instance.level         = Mathf.Max(1, data.playerLevel.level);
+            PlayerLevel.Instance.xp            = Mathf.Max(0, data.playerLevel.xp);
+            PlayerLevel.Instance.upgradePoints = Mathf.Max(0, data.playerLevel.upgradePoints);
+        }
+
+        // Restore farm building upgrades (kiosk)
+        FarmUpgradeManager.Instance?.LoadFromSaveData(data.farmUpgrades);
 
         // Restore pre-placed plot states (by index)
         int staticCount = farmPlots != null ? farmPlots.Length : 0;
@@ -220,8 +246,21 @@ public class GameManager : MonoBehaviour
             case CropType.Potato: potatoes += amount; break;
             case CropType.Wheat:  wheat    += amount; break;
         }
+
+        // Award XP for harvesting
+        PlayerLevel.Instance?.AddXP(XpForHarvest(cropType, amount));
+
         UpdateUI();
     }
+
+    private static int XpForHarvest(CropType crop, int amount) =>
+        amount * (crop switch
+        {
+            CropType.Carrot => 5,
+            CropType.Potato => 8,
+            CropType.Wheat  => 6,
+            _               => 5
+        });
 
     // ── Shop ──────────────────────────────────────────────────────────────────
 
@@ -262,7 +301,8 @@ public class GameManager : MonoBehaviour
     public void SellAllHarvest()
     {
         int totalMoney = 0;
-        int flatBonus  = Mathf.RoundToInt(TalentManager.Instance.GetTalentModifier(TalentType.SellPrice));
+        int flatBonus  = Mathf.RoundToInt(TalentManager.Instance.GetTalentModifier(TalentType.SellPrice))
+                       + (FarmUpgradeManager.Instance?.GetSellBonus() ?? 0);
 
         CropData cd;
         cd = GetCropData(CropType.Carrot); if (cd != null) totalMoney += carrots  * (cd.sellPrice + flatBonus);

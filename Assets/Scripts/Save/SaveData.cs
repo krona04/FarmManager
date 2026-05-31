@@ -1,24 +1,35 @@
 using System.Collections.Generic;
 
+// ── Per-slot metadata (shown in main menu) ────────────────────────────────────
+[System.Serializable]
+public class SaveSlotMeta
+{
+    public bool   hasData;
+    public int    level;
+    public int    money;
+    public string saveDate; // "dd.MM.yyyy HH:mm"
+}
+
+// ── Plot / Building ────────────────────────────────────────────────────────────
 [System.Serializable]
 public class PlotSaveData
 {
-    public int   state;          // PlotState as int
-    public int   plantedCrop;    // CropType as int
+    public int   state;
+    public int   plantedCrop;
     public float growTimer;
-    public float growTimeTarget; // _currentGrowTimeTarget (after talent modifier)
+    public float growTimeTarget;
 }
 
 [System.Serializable]
 public class BuildingSaveData
 {
-    public int   itemIndex;      // index into BuildManager.buildableItems[]
-    public float px, py, pz;    // world position
-    public float rotY;           // Y rotation in degrees
-    // Only populated when BuildableItem.isFarmPlot == true
+    public int          itemIndex;
+    public float        px, py, pz;
+    public float        rotY;
     public PlotSaveData plotState = new PlotSaveData();
 }
 
+// ── Talent / Level ─────────────────────────────────────────────────────────────
 [System.Serializable]
 public class TalentSaveData
 {
@@ -29,10 +40,32 @@ public class TalentSaveData
 }
 
 [System.Serializable]
+public class PlayerLevelSaveData
+{
+    public int level         = 1;
+    public int xp            = 0;
+    public int upgradePoints = 0;
+}
+
+// ── Farm Upgrades (kiosk) ──────────────────────────────────────────────────────
+[System.Serializable]
+public class FarmUpgradeSaveData
+{
+    public int extraPlotsOwned;
+    public int freePlotTokens;
+    public int growthBoosterLevel;
+    public int harvestBoosterLevel;
+    public int tradeNetworkLevel;
+}
+
+// ── Full save ─────────────────────────────────────────────────────────────────
+[System.Serializable]
 public class SaveData
 {
+    public string saveDate;   // filled by SaveSystem.Save()
+
     public int money;
-    public int selectedCrop;     // CropType as int
+    public int selectedCrop;
 
     public int carrotSeeds;
     public int potatoSeeds;
@@ -42,7 +75,9 @@ public class SaveData
     public int potatoes;
     public int wheat;
 
-    public TalentSaveData talents = new TalentSaveData();
+    public TalentSaveData      talents      = new TalentSaveData();
+    public PlayerLevelSaveData playerLevel  = new PlayerLevelSaveData();
+    public FarmUpgradeSaveData farmUpgrades = new FarmUpgradeSaveData();
 
     public List<PlotSaveData>     plots           = new List<PlotSaveData>();
     public List<BuildingSaveData> placedBuildings = new List<BuildingSaveData>();

@@ -8,7 +8,7 @@ public class PlayerInteraction : MonoBehaviour
     public float interactDistance = 3f;
     public Key   interactKey      = Key.E;
 
-    [Header("Shop Controls (keyboard shortcuts)")]
+    [Header("Keyboard Shortcuts")]
     public Key buySeedKey     = Key.B;
     public Key sellHarvestKey = Key.P;
     public Key switchCropKey  = Key.Q;
@@ -25,31 +25,37 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
-        // Block while any menu or build mode is active
-        if (ShopMenu.IsShopOpen || BuildManager.IsBuildMenuOpen || BuildManager.IsBuildModeActive)
+        bool anyMenu = ShopMenu.IsShopOpen || FarmUpgradeShop.IsOpen
+                       || BuildManager.IsBuildMenuOpen || BuildManager.IsBuildModeActive;
+
+        if (anyMenu)
         {
             if (hintText != null) hintText.text = string.Empty;
             return;
         }
 
-        CheckForInteractable();
+        CheckHint();
         TryInteract();
-        TryShopShortcuts();
+        TryShortcuts();
     }
 
-    // ── Hint text ─────────────────────────────────────────────────────────────
+    // ── Hint ──────────────────────────────────────────────────────────────────
 
-    private void CheckForInteractable()
+    private void CheckHint()
     {
         if (hintText == null) return;
 
         var shop = Raycast<ShopInteractable>();
-        if (shop != null) { hintText.text = $"[E] Enter {shop.shopName}"; return; }
+        if (shop != null)
+        {
+            hintText.text = $"[E] {shop.shopName}";
+            return;
+        }
 
         var plot = Raycast<FarmPlot>();
         if (plot == null)
         {
-            hintText.text = "[Q] Switch crop  |  [B] Buy seed  |  [P] Sell harvest";
+            hintText.text = "[Q] Switch crop  |  [B] Buy seed  |  [P] Sell  |  [I] Seed shop";
             return;
         }
 
@@ -70,14 +76,24 @@ public class PlayerInteraction : MonoBehaviour
         if (kb == null || !kb[interactKey].wasPressedThisFrame) return;
 
         var shop = Raycast<ShopInteractable>();
-        if (shop != null) { ShopMenu.Instance?.Open(shop.shopName); return; }
+        if (shop != null)
+        {
+            // Route to the correct shop based on type
+            switch (shop.shopType)
+            {
+                case ShopType.FarmUpgrades:
+                    FarmUpgradeShop.Instance?.Open();
+                    break;
+            }
+            return;
+        }
 
         Raycast<FarmPlot>()?.Interact();
     }
 
-    // ── Keyboard shortcuts ────────────────────────────────────────────────────
+    // ── Keyboard shortcuts (work outside any menu) ───────────────────────────
 
-    private void TryShopShortcuts()
+    private void TryShortcuts()
     {
         var kb = Keyboard.current;
         if (kb == null || GameManager.Instance == null) return;
@@ -87,7 +103,7 @@ public class PlayerInteraction : MonoBehaviour
         if (kb[switchCropKey].wasPressedThisFrame)  GameManager.Instance.SelectNextCrop();
     }
 
-    // ── Raycast helper ────────────────────────────────────────────────────────
+    // ── Raycast ───────────────────────────────────────────────────────────────
 
     private T Raycast<T>() where T : Component
     {
