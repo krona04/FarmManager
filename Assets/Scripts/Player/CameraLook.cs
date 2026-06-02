@@ -15,6 +15,7 @@ public class CameraLook : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         _playerBody = transform.parent;
+        mouseSensitivity = SettingsManager.MouseSensitivity;
     }
 
     void Update()

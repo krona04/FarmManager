@@ -25,7 +25,8 @@ public class PlayerInteraction : MonoBehaviour
 
     private void Update()
     {
-        bool anyMenu = ShopMenu.IsShopOpen || FarmUpgradeShop.IsOpen
+        bool anyMenu = PauseMenu.IsPaused
+                       || ShopMenu.IsShopOpen || FarmUpgradeShop.IsOpen
                        || BuildManager.IsBuildMenuOpen || BuildManager.IsBuildModeActive;
 
         if (anyMenu)

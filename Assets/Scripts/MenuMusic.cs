@@ -13,11 +13,18 @@ public class MenuMusic : MonoBehaviour
     void Start()
     {
         _audioSource = GetComponent<AudioSource>();
+        volume = SettingsManager.MusicVolume;
         _audioSource.loop = true;
         _audioSource.volume = 0f;
         _audioSource.Play();
 
         StartCoroutine(FadeIn());
+    }
+
+    public void ApplyVolume(float v)
+    {
+        volume = v;
+        if (_audioSource != null) _audioSource.volume = v;
     }
 
     System.Collections.IEnumerator FadeIn()

@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour
 
     private void OnGUI()
     {
-        if (_saveNotifTimer <= 0f) return;
+        if (PauseMenu.IsPaused || _saveNotifTimer <= 0f) return;
         float a = Mathf.Clamp01(_saveNotifTimer);
         var s = new GUIStyle(GUI.skin.label)
             { fontSize = 17, fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleRight };

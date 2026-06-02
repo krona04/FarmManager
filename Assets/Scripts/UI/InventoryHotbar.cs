@@ -84,6 +84,7 @@ public class InventoryHotbar : MonoBehaviour
     }
 
     private static bool AnyMenuOpen() =>
+        PauseMenu.IsPaused ||
         ShopMenu.IsShopOpen || FarmUpgradeShop.IsOpen || TalentScreen.IsOpen ||
         BuildManager.IsBuildMenuOpen || BuildManager.IsBuildModeActive;
 
@@ -91,6 +92,7 @@ public class InventoryHotbar : MonoBehaviour
 
     private void OnGUI()
     {
+        if (PauseMenu.IsPaused) return;
         if (ShopMenu.IsShopOpen || FarmUpgradeShop.IsOpen || TalentScreen.IsOpen || BuildManager.IsBuildMenuOpen) return;
         if (GameManager.Instance == null) return;
         EnsureStyles();

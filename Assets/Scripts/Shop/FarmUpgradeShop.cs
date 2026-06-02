@@ -65,6 +65,8 @@ public class FarmUpgradeShop : MonoBehaviour
 
     private void OnGUI()
     {
+        if (PauseMenu.IsPaused) return;
+
         // Notification (visible even when shop is closed)
         if (_notifTimer > 0f)
         {

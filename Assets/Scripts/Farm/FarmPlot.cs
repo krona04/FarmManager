@@ -52,13 +52,19 @@ public class FarmPlot : MonoBehaviour
 
     private static readonly Color ColorEmpty = new Color(0.55f, 0.37f, 0.22f);
 
-    private void Start()
+    // Awake runs before Start and before any external LoadFromSaveData() calls,
+    // so plant points and soil renderer must be cached here (not in Start).
+    // This is critical for dynamically spawned plots (BuildManager.RestoreBuildings).
+    private void Awake()
     {
         if (soilRenderer == null)
             soilRenderer = GetComponentInChildren<Renderer>();
 
         CachePlantPoints();
+    }
 
+    private void Start()
+    {
         if (soilRenderer == null)
             Debug.LogError($"{gameObject.name}: Soil Renderer is not assigned!");
 

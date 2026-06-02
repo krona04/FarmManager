@@ -263,6 +263,7 @@ public class BuildManager : MonoBehaviour
 
     private void OnGUI()
     {
+        if (PauseMenu.IsPaused) return;
         EnsureStyles();
         if (IsBuildMenuOpen)  DrawMenu();
         if (IsBuildModeActive) DrawHUD();

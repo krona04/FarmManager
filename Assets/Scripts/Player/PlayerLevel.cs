@@ -68,7 +68,7 @@ public class PlayerLevel : MonoBehaviour
 
     private void OnGUI()
     {
-        if (_levelUpTimer <= 0f) return;
+        if (PauseMenu.IsPaused || _levelUpTimer <= 0f) return;
         BuildStyle();
 
         float a = Mathf.Clamp01(_levelUpTimer);
