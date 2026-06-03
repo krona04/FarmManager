@@ -102,14 +102,13 @@ public class MainMenu : MonoBehaviour
 
     private void LoadSlot(int slot)
     {
-        SaveSystem.CurrentSlot = slot;
+        SaveSystem.RequestLoadSlot(slot);
         SceneManager.LoadScene(gameSceneName);
     }
 
     private void NewGameSlot(int slot)
     {
-        SaveSystem.DeleteSlot(slot);
-        SaveSystem.CurrentSlot = slot;
+        SaveSystem.RequestNewGameSlot(slot);
         SceneManager.LoadScene(gameSceneName);
     }
 

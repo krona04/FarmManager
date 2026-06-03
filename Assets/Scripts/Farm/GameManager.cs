@@ -41,6 +41,7 @@ public class GameManager : MonoBehaviour
     // ── Internal ──────────────────────────────────────────────────────────────
     private float _autoSaveTimer;
     private float _saveNotifTimer;
+    private bool  _allowSaving = true;
     private const float NotifDur = 2.5f;
 
     // Plots added at runtime by BuildManager
@@ -58,7 +59,26 @@ public class GameManager : MonoBehaviour
     private IEnumerator Start()
     {
         yield return null;
-        LoadGame();
+
+        _allowSaving = false;
+        SaveSystem.MigrateLegacySave();
+
+        SaveStartupRequest startup = SaveSystem.ConsumeStartupRequest();
+        SaveData pendingLoadData = startup.action == SaveStartupAction.Load
+            ? SaveSystem.TakePendingLoadData()
+            : null;
+        bool loaded = false;
+
+        if (startup.action == SaveStartupAction.NewGame)
+        {
+            Debug.Log($"[GameManager] Starting new game in slot {SaveSystem.CurrentSlot}.");
+        }
+        else
+        {
+            loaded = LoadGame(pendingLoadData);
+        }
+
+        _allowSaving = loaded || startup.action != SaveStartupAction.Load;
         UpdateUI();
         _autoSaveTimer = autoSaveInterval;
     }
@@ -103,6 +123,12 @@ public class GameManager : MonoBehaviour
 
     public void SaveGame()
     {
+        if (!_allowSaving)
+        {
+            Debug.LogWarning($"[GameManager] Save skipped because slot {SaveSystem.CurrentSlot} was requested for loading but did not load.");
+            return;
+        }
+
         var data = new SaveData
         {
             money        = money,
@@ -155,10 +181,16 @@ public class GameManager : MonoBehaviour
 
     // ── Load ──────────────────────────────────────────────────────────────────
 
-    public void LoadGame()
+    public bool LoadGame(SaveData pendingData = null)
     {
-        SaveData data = SaveSystem.Load();
-        if (data == null) return;
+        SaveData data = pendingData ?? SaveSystem.Load();
+        if (data == null)
+        {
+            Debug.LogWarning($"[GameManager] No save data found for slot {SaveSystem.CurrentSlot}. Starting a new game.");
+            return false;
+        }
+
+        data.EnsureDefaults();
 
         money        = data.money;
         selectedCrop = (CropType)data.selectedCrop;
@@ -198,6 +230,7 @@ public class GameManager : MonoBehaviour
         BuildManager.Instance?.RestoreBuildings(data.placedBuildings);
 
         Debug.Log("[GameManager] Game loaded.");
+        return true;
     }
 
     // ── Crop data ─────────────────────────────────────────────────────────────

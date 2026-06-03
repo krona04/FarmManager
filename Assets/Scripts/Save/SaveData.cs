@@ -81,4 +81,13 @@ public class SaveData
 
     public List<PlotSaveData>     plots           = new List<PlotSaveData>();
     public List<BuildingSaveData> placedBuildings = new List<BuildingSaveData>();
+
+    public void EnsureDefaults()
+    {
+        if (talents == null) talents = new TalentSaveData();
+        if (playerLevel == null) playerLevel = new PlayerLevelSaveData();
+        if (farmUpgrades == null) farmUpgrades = new FarmUpgradeSaveData();
+        if (plots == null) plots = new List<PlotSaveData>();
+        if (placedBuildings == null) placedBuildings = new List<BuildingSaveData>();
+    }
 }
