@@ -17,6 +17,11 @@ public class FarmPlot : MonoBehaviour
 
     public static bool IsPlantingQteActive { get; private set; }
 
+    public static void SetPlantingMiniGameActive(bool active)
+    {
+        IsPlantingQteActive = active;
+    }
+
     [Header("Plot Info")]
     public PlotState currentState = PlotState.Empty;
     public CropType plantedCrop = CropType.None;
@@ -224,7 +229,7 @@ public class FarmPlot : MonoBehaviour
         UpdatePlantGrowth();
         UpdateVisual();
 
-        BeginPlantingQte();
+        MiniGameManager.Instance.StartRandomMiniGame(this);
 
         Debug.Log($"{gameObject.name}: planted {plantedCrop}.");
     }
@@ -476,6 +481,21 @@ public class FarmPlot : MonoBehaviour
 
             Debug.Log($"{gameObject.name}: {plantedCrop} is ready!");
         }
+    }
+
+    public void ApplyGrowthBoost(float score, float maxBoostPercent)
+    {
+        if (currentState != PlotState.Growing)
+            return;
+
+        if (_currentCropData == null || _currentGrowTimeTarget <= 0f)
+            return;
+
+        float clampedScore = Mathf.Clamp01(score);
+        float clampedBoostPercent = Mathf.Clamp01(maxBoostPercent);
+        float boostSeconds = _currentGrowTimeTarget * clampedBoostPercent * clampedScore;
+
+        AddGrowthTime(boostSeconds);
     }
 
     public string GetPlantedCropName()
