@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 /// Main menu controller.
@@ -61,6 +62,7 @@ public class MainMenu : MonoBehaviour
     private GUIStyle _sectionSt, _rowLabelSt, _valSt;
     private GUIStyle _btnOn, _btnOff;
     private GUIStyle _sliderBg, _sliderThumb;
+    private GraphicRaycaster _mainMenuRaycaster;
     private bool     _builtSt;
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -80,6 +82,7 @@ public class MainMenu : MonoBehaviour
     {
         _panel         = Panel.Slots;
         _deleteConfirm = -1;
+        SetMainMenuCanvasInteractive(false);
     }
 
     public void OpenSettings()
@@ -88,6 +91,7 @@ public class MainMenu : MonoBehaviour
         _tmpMusic = SettingsManager.MusicVolume;
         _tmpSfx   = SettingsManager.SfxVolume;
         _tmpSens  = SettingsManager.MouseSensitivity;
+        SetMainMenuCanvasInteractive(false);
     }
 
     public void QuitGame()
@@ -117,6 +121,20 @@ public class MainMenu : MonoBehaviour
         _panel         = Panel.None;
         _deleteConfirm = -1;
         SettingsManager.Save();
+        SetMainMenuCanvasInteractive(true);
+    }
+
+    private void SetMainMenuCanvasInteractive(bool interactive)
+    {
+        if (mainMenuCanvas == null) return;
+
+        mainMenuCanvas.enabled = true;
+
+        if (_mainMenuRaycaster == null)
+            _mainMenuRaycaster = mainMenuCanvas.GetComponent<GraphicRaycaster>();
+
+        if (_mainMenuRaycaster != null)
+            _mainMenuRaycaster.enabled = interactive;
     }
 
     // ── OnGUI dispatcher ──────────────────────────────────────────────────────

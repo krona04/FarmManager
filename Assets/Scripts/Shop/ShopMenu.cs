@@ -12,7 +12,7 @@ public class ShopMenu : MonoBehaviour
     private const float RowH = 82f;
 
     // ── State ─────────────────────────────────────────────────────────────────
-    private enum Tab { Buy, Sell }
+    private enum Tab { Buy, Sell, Decor }
     private Tab    _tab;
     private string _shopName = "SHOP";
 
@@ -21,7 +21,7 @@ public class ShopMenu : MonoBehaviour
     // ── Styles ────────────────────────────────────────────────────────────────
     private GUIStyle _titleSt, _infoSt, _rowSt;
     private GUIStyle _tabOn, _tabOff;
-    private GUIStyle _btnBuy, _btnSell, _btnDis, _btnClose;
+    private GUIStyle _btnBuy, _btnSell, _btnDis, _btnClose, _btnOwned;
     private bool     _built;
 
     // ────────────────────────────────────────────────────────────────────────
@@ -92,18 +92,23 @@ public class ShopMenu : MonoBehaviour
         int money = GameManager.Instance != null ? GameManager.Instance.money : 0;
         GUI.Label(new Rect(px, py + 46f, PW, 24f), $"Money:  {money}$", _infoSt);
 
-        // ── Tabs
-        float tabW = 140f, tabH = 32f, tabY = py + 74f;
-        if (GUI.Button(new Rect(px + PW * .5f - tabW - 4f, tabY, tabW, tabH),
-                       "Buy Seeds",     _tab == Tab.Buy  ? _tabOn : _tabOff)) _tab = Tab.Buy;
-        if (GUI.Button(new Rect(px + PW * .5f + 4f,        tabY, tabW, tabH),
-                       "Sell Harvest",  _tab == Tab.Sell ? _tabOn : _tabOff)) _tab = Tab.Sell;
+        // ── Tabs (3 tabs centered)
+        float tabW = 130f, tabH = 32f, tabY = py + 74f, tabGap = 8f;
+        float tabsTotal = 3f * tabW + 2f * tabGap;
+        float tabX = px + (PW - tabsTotal) * .5f;
+        if (GUI.Button(new Rect(tabX,                     tabY, tabW, tabH),
+                       "Buy Seeds",    _tab == Tab.Buy   ? _tabOn : _tabOff)) _tab = Tab.Buy;
+        if (GUI.Button(new Rect(tabX + tabW + tabGap,     tabY, tabW, tabH),
+                       "Sell Harvest", _tab == Tab.Sell  ? _tabOn : _tabOff)) _tab = Tab.Sell;
+        if (GUI.Button(new Rect(tabX + 2f*(tabW+tabGap),  tabY, tabW, tabH),
+                       "Decor Shop",   _tab == Tab.Decor ? _tabOn : _tabOff)) _tab = Tab.Decor;
 
         Rect(new Rect(px + 20f, tabY + tabH + 4f, PW - 40f, 1f), new Color(.28f,.42f,.28f));
 
         float cy = tabY + tabH + 10f;
-        if (_tab == Tab.Buy)  DrawBuyTab(px, cy, money);
-        else                   DrawSellTab(px, cy);
+        if      (_tab == Tab.Buy)   DrawBuyTab(px, cy, money);
+        else if (_tab == Tab.Sell)  DrawSellTab(px, cy);
+        else                        DrawDecorTab(px, cy, money);
 
         // Close
         float closeY = py + PH - 46f;
@@ -216,6 +221,47 @@ public class ShopMenu : MonoBehaviour
         GameManager.Instance.UpdateUI();
     }
 
+    // ── Decor tab ─────────────────────────────────────────────────────────────
+
+    private void DrawDecorTab(float px, float ry, int money)
+    {
+        if (GameManager.Instance == null) return;
+
+        bool owned  = GameManager.Instance.carPurchased;
+        int  price  = GameManager.CarPrice;
+        bool canBuy = !owned && money >= price;
+
+        // Item background
+        Rect(new Rect(px + 20f, ry + 4f, PW - 40f, RowH - 4f), new Color(.10f,.08f,.06f,.9f));
+        Rect(new Rect(px + 20f, ry + 4f, 4f, RowH - 4f),
+             owned ? new Color(.9f,.75f,.2f) : new Color(.3f,.3f,.35f));
+
+        GUI.Label(new Rect(px + 36f, ry + 10f, PW - 200f, 26f),
+                  "Classic Farm Car", _rowSt);
+        GUI.Label(new Rect(px + 36f, ry + 38f, PW - 200f, 22f),
+                  owned ? "Already on your farm!" : $"Price:  {price}$", _infoSt);
+
+        if (owned)
+        {
+            if (Btn(new Rect(px + PW - 158f, ry + 22f, 128f, 36f), "Owned ✓", _btnOwned))
+            { /* nothing */ }
+        }
+        else
+        {
+            bool clicked = Btn(new Rect(px + PW - 158f, ry + 22f, 128f, 36f),
+                               canBuy ? $"Buy  ({price}$)" : $"Need {price}$",
+                               canBuy ? _btnBuy : _btnDis);
+            if (clicked && canBuy)
+                GameManager.Instance.BuyCarDecor();
+        }
+
+        Rect(new Rect(px + 20f, ry + RowH + 4f, PW - 40f, 1f), new Color(.16f,.14f,.10f));
+
+        var descSt = Style(13, FontStyle.Normal, TextAnchor.MiddleLeft, new Color(.65f,.60f,.50f));
+        GUI.Label(new Rect(px + 20f, ry + RowH + 12f, PW - 40f, 22f),
+                  "A vintage car parked on your farm as a decoration.", descSt);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static bool Btn(Rect r, string label, GUIStyle s)
@@ -249,6 +295,7 @@ public class ShopMenu : MonoBehaviour
         _btnSell  = BtnStyle(new Color(.52f,.38f,.08f), Color.white, 13);
         _btnClose = BtnStyle(new Color(.20f,.20f,.22f), Color.white, 13);
         _btnDis   = BtnStyle(new Color(.20f,.20f,.20f), new Color(.45f,.45f,.45f), 13);
+        _btnOwned = BtnStyle(new Color(.30f,.28f,.10f), new Color(.90f,.75f,.25f), 13);
     }
 
     private static GUIStyle Style(int size, FontStyle fs, TextAnchor align, Color col)

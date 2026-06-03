@@ -35,6 +35,11 @@ public class GameManager : MonoBehaviour
     [Header("Farm Plots (pre-placed in scene)")]
     public FarmPlot[] farmPlots;
 
+    [Header("Decor")]
+    public GameObject carDecorObject;
+    public bool carPurchased = false;
+    public const int CarPrice = 1500;
+
     [Header("Auto Save")]
     public float autoSaveInterval = 120f;
 
@@ -79,6 +84,7 @@ public class GameManager : MonoBehaviour
         }
 
         _allowSaving = loaded || startup.action != SaveStartupAction.Load;
+        RefreshCarDecor();
         UpdateUI();
         _autoSaveTimer = autoSaveInterval;
     }
@@ -138,7 +144,8 @@ public class GameManager : MonoBehaviour
             wheatSeeds   = wheatSeeds,
             carrots      = carrots,
             potatoes     = potatoes,
-            wheat        = wheat
+            wheat        = wheat,
+            carPurchased = carPurchased
         };
 
         // Save talent levels
@@ -200,6 +207,8 @@ public class GameManager : MonoBehaviour
         carrots      = data.carrots;
         potatoes     = data.potatoes;
         wheat        = data.wheat;
+        carPurchased = data.carPurchased;
+        RefreshCarDecor();
 
         // Restore talent levels
         if (TalentManager.Instance != null && data.talents != null)
@@ -349,6 +358,23 @@ public class GameManager : MonoBehaviour
         potatoes = 0;
         wheat    = 0;
         UpdateUI();
+    }
+
+    public bool BuyCarDecor()
+    {
+        if (carPurchased) return false;
+        if (money < CarPrice) return false;
+        money -= CarPrice;
+        carPurchased = true;
+        RefreshCarDecor();
+        UpdateUI();
+        return true;
+    }
+
+    public void RefreshCarDecor()
+    {
+        if (carDecorObject != null)
+            carDecorObject.SetActive(carPurchased);
     }
 
     public void SelectNextCrop()

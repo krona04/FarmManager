@@ -79,6 +79,8 @@ public class SaveData
     public PlayerLevelSaveData playerLevel  = new PlayerLevelSaveData();
     public FarmUpgradeSaveData farmUpgrades = new FarmUpgradeSaveData();
 
+    public bool carPurchased;
+
     public List<PlotSaveData>     plots           = new List<PlotSaveData>();
     public List<BuildingSaveData> placedBuildings = new List<BuildingSaveData>();
 
