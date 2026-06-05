@@ -26,12 +26,6 @@
 - Open with **[I]** or by interacting with the NPC vendor
 - **Dynamic pricing** influenced by the *Sell Bonus* talent and *Trade Network* upgrade
 
-### 🔨 Build Mode
-
-- Freely place **buildings and decorations** anywhere on the farm
-- Grid-snapping placement with **confirm / cancel** controls
-- Purchased upgrades **unlock additional plot slots**
-
 ### 🌟 Talent Tree **[T]**
 
 Spend upgrade points (not money) across four branches:
@@ -68,18 +62,6 @@ Purchasable improvements using in-game currency:
 
 ---
 
-## ⚙️ Settings
-
-| Category | Options |
-|---|---|
-| Audio | Music Volume, Sound Effects Volume |
-| Graphics | Fullscreen, Graphics Quality (Low / Medium / High / Ultra) |
-| Controls | Mouse Sensitivity, Shuffle Playlist |
-
-All settings persist between sessions via **PlayerPrefs**.
-
----
-
 ## 🎵 Music System
 
 - Separate tracks for each mode: **gameplay / shop / talents / build**
@@ -99,16 +81,5 @@ All settings persist between sessions via **PlayerPrefs**.
 | `E` / `F` | Interact |
 | `I` | Seed Shop |
 | `T` | Talent Tree |
-| `B` | Build Menu |
+| `TAB` | Build Menu |
 | `ESC` | Pause / Close menu |
-
----
-
-## 🛠️ Technical Details
-
-| | |
-|---|---|
-| **Engine** | Unity (Input System, CharacterController) |
-| **Save Format** | Per-slot JSON files via `SaveSystem` |
-| **UI** | Unity IMGUI for in-game overlays · Canvas for main menu |
-| **Audio** | Dual `AudioSource` with cross-fade |
